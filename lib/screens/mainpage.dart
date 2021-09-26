@@ -67,6 +67,9 @@ class _MainPageState extends State<MainPage> {
 
   List<LatLng> polylineCoordinates = [];
   Set<Polyline> _polylines = {};
+
+  Set<Marker> _Markers = {};
+  Set<Circle> _Circles = {};
   Future<void> getDirection() async {
     var pickup = Provider.of<AppData>(context, listen: false).pickupAddress;
     var destination =
@@ -139,6 +142,49 @@ class _MainPageState extends State<MainPage> {
     }
 
     mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+
+    Marker pickUpMarker = Marker(
+      markerId: MarkerId("pickup"),
+      position: pickUpLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      infoWindow: InfoWindow(title: pickup.placeName, snippet: "My Location"),
+    );
+
+    Marker destinationMarker = Marker(
+      markerId: MarkerId("destination"),
+      position: destinationLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      infoWindow:
+          InfoWindow(title: destination.placeName, snippet: "Destination"),
+    );
+
+    setState(() {
+      _Markers.add(pickUpMarker);
+      _Markers.add(destinationMarker);
+    });
+
+    Circle pickUpCircle = Circle(
+      circleId: CircleId('pickUp'),
+      strokeColor: Colors.green,
+      strokeWidth: 3,
+      radius: 12,
+      center: pickUpLatLng,
+      fillColor: BrandColors.colorGreen,
+    );
+
+    Circle destinationCircle = Circle(
+      circleId: CircleId('destination'),
+      strokeColor: BrandColors.colorAccentPurple,
+      strokeWidth: 3,
+      radius: 12,
+      center: destinationLatLng,
+      fillColor: BrandColors.colorAccentPurple,
+    );
+
+    setState(() {
+      _Circles.add(pickUpCircle);
+      _Circles.add(destinationCircle);
+    });
   }
 
   @override
@@ -222,6 +268,8 @@ class _MainPageState extends State<MainPage> {
             zoomControlsEnabled: true,
             zoomGesturesEnabled: true,
             polylines: _polylines,
+            markers: _Markers,
+            circles: _Circles,
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               mapController = controller;
@@ -263,7 +311,7 @@ class _MainPageState extends State<MainPage> {
             ),
           ),
 
-          //bottom sheet
+          //search sheet
           Positioned(
             left: 0,
             right: 0,
