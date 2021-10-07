@@ -1,4 +1,7 @@
 import 'package:connectivity/connectivity.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -6,12 +9,29 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_clone/data_models/address.dart';
 import 'package:uber_clone/data_models/directiondetails.dart';
+import 'package:uber_clone/data_models/user.dart';
 import 'package:uber_clone/data_provider/app_data.dart';
 import 'package:uber_clone/helpers/request_hepler.dart';
 
 import '../global_variable.dart';
 
 class HelperMethods {
+  static void getCurrentUserInfo() async {
+    currentFirebaseUser = FirebaseAuth.instance.currentUser;
+
+    String userid = currentFirebaseUser.uid;
+
+    DatabaseReference userRef =
+        FirebaseDatabase.instance.reference().child('users/$userid');
+
+    userRef.once().then((DataSnapshot snapshot) {
+      if (snapshot.value != null) {
+        currentUserInfo = LocalUser.fromSnapshot(snapshot);
+        print("my full name is ${currentUserInfo.fullName}");
+      }
+    });
+  }
+
   static Future<String> findCordinateAddress(
       Position position, BuildContext context) async {
     String placeAddress = "";

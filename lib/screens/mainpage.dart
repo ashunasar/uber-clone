@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -37,13 +39,15 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   double searchSheetHeight = Platform.isIOS ? 300 : 275;
   double rideDetailsSheetHeight = 0; // Platform.isAndroid ? 235 : 260;
-
+  double requestingSheetHeight = 0; // Platform.isAndroid ? 195 : 220
   // var geoLocator = Geolocator();
   Position currentPosition;
 
   DirectionDetails tripDirectionDetails;
 
   bool drawerCanOpen = true;
+
+  DatabaseReference rideRef;
 
   void setUpPositionLocator() async {
     Position position = await Geolocator.getCurrentPosition(
@@ -206,6 +210,23 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     });
   }
 
+  void showRequestingSheet() {
+    setState(() {
+      rideDetailsSheetHeight = 0;
+      requestingSheetHeight = Platform.isAndroid ? 195 : 220;
+      // searchSheetHeight = 0;
+      // rideDetailsSheetHeight = Platform.isAndroid ? 235 : 260;
+      mapBottomPadding = Platform.isAndroid ? 200 : 190;
+      drawerCanOpen = true;
+    });
+
+    createRideRequest();
+  }
+
+  void cancelRequest() {
+    rideRef.remove();
+  }
+
   resetApp() {
     setState(() {
       polylineCoordinates.clear();
@@ -213,11 +234,50 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       _Markers.clear();
       _Circles.clear();
       rideDetailsSheetHeight = 0;
+      requestingSheetHeight = 0;
       searchSheetHeight = Platform.isAndroid ? 275 : 300;
       mapBottomPadding = Platform.isAndroid ? 280 : 270;
       drawerCanOpen = true;
     });
     setUpPositionLocator();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    HelperMethods.getCurrentUserInfo();
+  }
+
+  void createRideRequest() {
+    rideRef = FirebaseDatabase.instance.reference().child('rideRequest').push();
+
+    var pickup = Provider.of<AppData>(context, listen: false).pickupAddress;
+    var destination =
+        Provider.of<AppData>(context, listen: false).destinationAddress;
+
+    Map pickupMap = {
+      'latitude': pickup.latitude.toString(),
+      'longitude': pickup.longitude.toString(),
+    };
+
+    Map destinationMap = {
+      'latitude': destination.latitude.toString(),
+      'longitude': destination.longitude.toString(),
+    };
+
+    Map rideMap = {
+      'created_at': DateTime.now().toString(),
+      'rider_name': currentUserInfo.fullName,
+      'rider_phone': currentUserInfo.phone,
+      'pickup_address': pickup.placeName,
+      'destination_address': destination.placeName,
+      'location': pickupMap,
+      'destination': destinationMap,
+      'payment_method': 'card',
+      'driver_id': 'waiting',
+    };
+
+    rideRef.set(rideMap);
   }
 
   @override
@@ -564,10 +624,79 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       child: TaxiButton(
                         title: 'REQUEST CAB',
                         color: BrandColors.colorGreen,
-                        onPressed: () {},
+                        onPressed: () {
+                          showRequestingSheet();
+                        },
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AnimatedSize(
+              vsync: this,
+              duration: Duration(milliseconds: 150),
+              curve: Curves.easeIn,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    topRight: Radius.circular(15),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 15,
+                      spreadRadius: 0.5,
+                      offset: Offset(0.7, 0.7),
+                    ),
+                  ],
+                ),
+                height: requestingSheetHeight,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0, vertical: 18.0),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 20),
+                      LinearProgressIndicator(
+                        valueColor: new AlwaysStoppedAnimation<Color>(
+                            BrandColors.colorTextSemiLight),
+                        backgroundColor: Colors.white,
+                      ),
+                      SizedBox(height: 50),
+                      GestureDetector(
+                        onTap: () {
+                          cancelRequest();
+                          resetApp();
+                        },
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(
+                              width: 1,
+                              color: BrandColors.colorLightGrayFair,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            size: 25,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text('Cancel Ride', style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
                 ),
               ),
             ),
