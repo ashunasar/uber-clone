@@ -48,8 +48,8 @@ class _LoginPageState extends State<LoginPage> {
                 email: emailController.text, password: passwordController.text)
             .catchError((ex) {
       Navigator.pop(context);
-      PlatformException thisEx = ex;
-      showSnackBar(thisEx.message);
+      // PlatformException thisEx = ex;
+      showSnackBar(ex.message);
     }))
         .user;
     if (user != null) {

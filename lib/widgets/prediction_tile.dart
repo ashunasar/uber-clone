@@ -50,37 +50,51 @@ class PredictionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FlatButton(
-      padding: EdgeInsets.zero,
       onPressed: () {
-        print(prediction.placeId);
         getPlaceDetails(prediction.placeId, context);
       },
+      padding: EdgeInsets.all(0),
       child: Container(
         child: Column(
-          children: [
-            SizedBox(height: 8),
+          children: <Widget>[
+            SizedBox(
+              height: 8,
+            ),
             Row(
-              children: [
-                Icon(OMIcons.locationOn, color: BrandColors.colorDimText),
-                SizedBox(width: 12),
+              children: <Widget>[
+                Icon(
+                  OMIcons.locationOn,
+                  color: BrandColors.colorDimText,
+                ),
+                SizedBox(
+                  width: 12,
+                ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(prediction.mainText,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16)),
-                      SizedBox(width: 2),
-                      Text(prediction.secondaryText,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 12, color: BrandColors.colorDimText)),
+                    children: <Widget>[
+                      Text(
+                        prediction.mainText ?? "",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      SizedBox(
+                        height: 2,
+                      ),
+                      Text(
+                        prediction.secondaryText ?? "",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 12, color: BrandColors.colorDimText),
+                      ),
                     ],
                   ),
-                ),
+                )
               ],
             ),
-            SizedBox(height: 8),
+            SizedBox(
+              height: 8,
+            ),
           ],
         ),
       ),

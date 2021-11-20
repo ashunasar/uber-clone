@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_clone/data_provider/app_data.dart';
+import 'package:uber_clone/global_variable.dart';
 import 'package:uber_clone/screens/loginpage.dart';
 import 'package:uber_clone/screens/mainpage.dart';
 import 'package:uber_clone/screens/registrationpage.dart';
@@ -34,6 +36,8 @@ Future<void> main() async {
   } catch (e) {
     print(e);
   }
+
+  currentFirebaseUser = FirebaseAuth.instance.currentUser;
   runApp(MyApp());
 }
 
@@ -51,7 +55,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        initialRoute: MainPage.id,
+        initialRoute: currentFirebaseUser == null ? LoginPage.id : MainPage.id,
         routes: {
           RegistrationPage.id: (context) => RegistrationPage(),
           LoginPage.id: (context) => LoginPage(),

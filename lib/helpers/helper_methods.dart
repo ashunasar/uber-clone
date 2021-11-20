@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -5,13 +8,13 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_clone/data_models/address.dart';
 import 'package:uber_clone/data_models/directiondetails.dart';
 import 'package:uber_clone/data_models/user.dart';
 import 'package:uber_clone/data_provider/app_data.dart';
 import 'package:uber_clone/helpers/request_hepler.dart';
+import 'package:http/http.dart' as http;
 
 import '../global_variable.dart';
 
@@ -100,5 +103,43 @@ class HelperMethods {
     double totalFares = baseFare + distanceFare + timeFare;
 
     return totalFares.truncate();
+  }
+
+  static double generateRandomNumber(int max) {
+    return Random().nextInt(max).toDouble();
+  }
+
+  static sendNotification(String token, context, String ride_id) async {
+    var destination =
+        Provider.of<AppData>(context, listen: false).destinationAddress;
+
+    Map<String, String> headerMap = {
+      'Content-Type': 'application/json',
+      'Authorization': serverKey,
+    };
+
+    Map notificationMap = {
+      'title': 'NEW TRIP REQUEST',
+      'body': 'Destination, ${destination.placeName}'
+    };
+
+    Map dataMap = {
+      'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+      'id': '1',
+      'status': 'done',
+      'ride_id': ride_id,
+    };
+
+    Map bodyMap = {
+      'notification': notificationMap,
+      'data': dataMap,
+      'priority': 'high',
+      'to': token
+    };
+
+    var response = await http.post('https://fcm.googleapis.com/fcm/send',
+        headers: headerMap, body: jsonEncode(bodyMap));
+
+    print(response.body);
   }
 }

@@ -13,3 +13,6 @@ CameraPosition googlePlex = CameraPosition(
 User currentFirebaseUser;
 
 LocalUser currentUserInfo;
+
+String serverKey =
+    "key=AAAAdMBoMR0:APA91bE0LtITehOuPHsU6g-S5A6hacksLnlMOWPfNBIKES0hyF-CEWlDEP0vfHM_DWlG-uabz4nU3fJnSNkEzjLCG3jeqQ4ZmqDKzz3Ban4Iv41cIMu-oHKoKZRKgPapspMySnYS4Q7X";
