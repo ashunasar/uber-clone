@@ -1,38 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:uber_clone/brand_colors.dart';
+
+import '../brand_colors.dart';
 
 class ProgressDialog extends StatelessWidget {
   final String status;
-
-  const ProgressDialog({
-    @required this.status,
-  });
+  ProgressDialog({this.status});
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       backgroundColor: Colors.transparent,
       child: Container(
-        margin: EdgeInsets.all(16),
+        margin: EdgeInsets.all(16.0),
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(4),
-        ),
+            color: Colors.white, borderRadius: BorderRadius.circular(4)),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16),
           child: Row(
-            children: [
-              SizedBox(width: 5),
+            children: <Widget>[
+              SizedBox(
+                width: 5,
+              ),
               CircularProgressIndicator(
                 valueColor:
                     AlwaysStoppedAnimation<Color>(BrandColors.colorAccent),
               ),
-              SizedBox(width: 25),
-              Text(status, style: TextStyle(fontSize: 15)),
+              SizedBox(
+                width: 25.0,
+              ),
+              Text(
+                status,
+                style: TextStyle(fontSize: 15),
+              ),
             ],
           ),
         ),

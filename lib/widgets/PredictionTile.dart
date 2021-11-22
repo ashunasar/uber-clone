@@ -1,47 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:uber_clone/data_models/address.dart';
-import 'package:uber_clone/data_models/prediction.dart';
-import 'package:uber_clone/data_provider/app_data.dart';
-import 'package:uber_clone/helpers/request_hepler.dart';
-import 'package:uber_clone/widgets/progress_diolog.dart';
+import 'package:uber_clone/datamodels/address.dart';
+import 'package:uber_clone/datamodels/prediction.dart';
+import 'package:uber_clone/dataprovider/appdata.dart';
+import 'package:uber_clone/helpers/requesthelper.dart';
 
 import '../brand_colors.dart';
-import '../global_variable.dart';
+import '../globalvariable.dart';
+import 'ProgressDialog.dart';
 
 class PredictionTile extends StatelessWidget {
   final Prediction prediction;
+  PredictionTile({this.prediction});
 
-  PredictionTile({@required this.prediction});
-
-  void getPlaceDetails(String placeId, BuildContext context) async {
+  void getPlaceDetails(String placeID, context) async {
     showDialog(
-        context: context,
         barrierDismissible: false,
-        builder: (BuildContext context) =>
-            ProgressDialog(status: 'Please wait...'));
+        context: context,
+        builder: (BuildContext context) => ProgressDialog(
+              status: 'Please wait...',
+            ));
 
     String url =
-        "https://maps.googleapis.com/maps/api/place/details/json?placeid=$placeId&key=$mapKey";
+        'https://maps.googleapis.com/maps/api/place/details/json?placeid=$placeID&key=$mapKey';
 
-    var response = await RequestHepler.getRequest(url);
+    var response = await RequestHelper.getRequest(url);
+
     Navigator.pop(context);
+
     if (response == 'failed') {
       return;
     }
 
-    if (response['status'] == "OK") {
-      Address thisPlagce = Address();
-      thisPlagce.placeName = response['result']['name'];
-      thisPlagce.placeId = placeId;
-      thisPlagce.latitude = response['result']['geometry']['location']['lat'];
-      thisPlagce.longitude = response['result']['geometry']['location']['lng'];
+    if (response['status'] == 'OK') {
+      Address thisPlace = Address();
+      thisPlace.placeName = response['result']['name'];
+      thisPlace.placeId = placeID;
+      thisPlace.latitude = response['result']['geometry']['location']['lat'];
+      thisPlace.longitude = response['result']['geometry']['location']['lng'];
 
       Provider.of<AppData>(context, listen: false)
-          .updateDestinationAddress(thisPlagce);
-
-      print(thisPlagce.placeName);
+          .updateDestinationAddress(thisPlace);
+      print(thisPlace.placeName);
 
       Navigator.pop(context, 'getDirection');
     }
@@ -74,7 +75,7 @@ class PredictionTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        prediction.mainText ?? "",
+                        prediction.mainText,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 16),
                       ),
@@ -82,7 +83,7 @@ class PredictionTile extends StatelessWidget {
                         height: 2,
                       ),
                       Text(
-                        prediction.secondaryText ?? "",
+                        prediction.secondaryText,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 12, color: BrandColors.colorDimText),

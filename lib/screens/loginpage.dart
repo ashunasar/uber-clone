@@ -4,8 +4,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uber_clone/screens/registrationpage.dart';
-import 'package:uber_clone/widgets/progress_diolog.dart';
-import 'package:uber_clone/widgets/taxi_button.dart';
+import 'package:uber_clone/widgets/ProgressDialog.dart';
+import 'package:uber_clone/widgets/TaxiButton.dart';
 
 import '../brand_colors.dart';
 import 'mainpage.dart';
@@ -18,15 +18,16 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
   void showSnackBar(String title) {
     final snackbar = SnackBar(
-        content: Text(
-      title,
-      textAlign: TextAlign.center,
-      style: TextStyle(fontSize: 15),
-    ));
+      content: Text(
+        title,
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 15),
+      ),
+    );
     scaffoldKey.currentState.showSnackBar(snackbar);
   }
 
@@ -37,22 +38,30 @@ class _LoginPageState extends State<LoginPage> {
   var passwordController = TextEditingController();
 
   void login() async {
+    //show please wait dialog
     showDialog(
-        context: context,
-        builder: (BuildContext context) => ProgressDialog(
-              status: "Logging you in...",
-            ));
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) => ProgressDialog(
+        status: 'Logging you in',
+      ),
+    );
 
-    final User user = (await _auth
+    final FirebaseUser user = (await _auth
             .signInWithEmailAndPassword(
-                email: emailController.text, password: passwordController.text)
+      email: emailController.text,
+      password: passwordController.text,
+    )
             .catchError((ex) {
+      //check error and display message
       Navigator.pop(context);
-      // PlatformException thisEx = ex;
-      showSnackBar(ex.message);
+      PlatformException thisEx = ex;
+      showSnackBar(thisEx.message);
     }))
         .user;
+
     if (user != null) {
+      // verify login
       DatabaseReference userRef =
           FirebaseDatabase.instance.reference().child('users/${user.uid}');
       userRef.once().then((DataSnapshot snapshot) {
@@ -68,93 +77,100 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.0),
             child: Column(
-              children: [
-                SizedBox(height: 70),
+              children: <Widget>[
+                SizedBox(
+                  height: 70,
+                ),
                 Image(
                   alignment: Alignment.center,
+                  height: 100.0,
+                  width: 100.0,
                   image: AssetImage('images/logo.png'),
-                  height: 100,
-                  width: 100,
                 ),
-                SizedBox(height: 40),
+                SizedBox(
+                  height: 40,
+                ),
                 Text(
-                  "Sign In as a Rider",
+                  'Sign In as a Rider',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Brand-Bold',
-                    fontSize: 25,
-                  ),
+                  style: TextStyle(fontSize: 25, fontFamily: 'Brand-Bold'),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(20.0),
                   child: Column(
-                    children: [
+                    children: <Widget>[
                       TextField(
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          labelText: "Email Address",
-                          labelStyle: TextStyle(fontSize: 14.0),
-                          hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 10.0),
-                        ),
+                            labelText: 'Email address',
+                            labelStyle: TextStyle(
+                              fontSize: 14.0,
+                            ),
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 10.0)),
                         style: TextStyle(fontSize: 14),
                       ),
-                      SizedBox(height: 10),
+                      SizedBox(
+                        height: 10,
+                      ),
                       TextField(
                         controller: passwordController,
                         obscureText: true,
                         decoration: InputDecoration(
-                          labelText: "Password",
-                          labelStyle: TextStyle(fontSize: 14.0),
-                          hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 10.0),
-                        ),
+                            labelText: 'Password',
+                            labelStyle: TextStyle(
+                              fontSize: 14.0,
+                            ),
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 10.0)),
                         style: TextStyle(fontSize: 14),
                       ),
-                      SizedBox(height: 40),
+                      SizedBox(
+                        height: 40,
+                      ),
                       TaxiButton(
-                          title: "LOGIN",
-                          color: BrandColors.colorGreen,
-                          onPressed: () async {
-                            var connectivityResult =
-                                await Connectivity().checkConnectivity();
+                        title: 'LOGIN',
+                        color: BrandColors.colorGreen,
+                        onPressed: () async {
+                          //check network availability
 
-                            if (connectivityResult !=
-                                    ConnectivityResult.mobile &&
-                                connectivityResult != ConnectivityResult.wifi) {
-                              showSnackBar("No Internet Connection");
-                              return;
-                            }
+                          var connectivityResult =
+                              await Connectivity().checkConnectivity();
+                          if (connectivityResult != ConnectivityResult.mobile &&
+                              connectivityResult != ConnectivityResult.wifi) {
+                            showSnackBar('No internet connectivity');
+                            return;
+                          }
 
-                            if (!emailController.text.contains('@')) {
-                              showSnackBar(
-                                  'Please provide a valid email address');
-                              return;
-                            }
-                            if (passwordController.text.length < 8) {
-                              showSnackBar(
-                                  'password must be at least 8 characters');
-                              return;
-                            }
+                          if (!emailController.text.contains('@')) {
+                            showSnackBar('Please enter a valid email address');
+                            return;
+                          }
 
-                            login();
-                          }),
+                          if (passwordController.text.length < 8) {
+                            showSnackBar('Please enter a valid password');
+                            return;
+                          }
+
+                          login();
+                        },
+                      ),
                     ],
                   ),
                 ),
                 FlatButton(
-                  child: Text("Don't have an account ? sign up here"),
-                  onPressed: () {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, RegistrationPage.id, (route) => false);
-                  },
-                ),
+                    onPressed: () {
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, RegistrationPage.id, (route) => false);
+                    },
+                    child: Text('Don\'t have an account, sign up here')),
               ],
             ),
           ),

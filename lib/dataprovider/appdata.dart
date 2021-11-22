@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-// import 'package:flutter/cupertino.dart';
-import 'package:uber_clone/data_models/address.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:uber_clone/datamodels/address.dart';
 
 class AppData extends ChangeNotifier {
   Address pickupAddress;
